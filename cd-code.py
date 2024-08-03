@@ -2,6 +2,7 @@ import time
 import json
 import logging
 import github3
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
@@ -40,6 +41,10 @@ while True:
             logging.info("Update available")
             # Update the current version
             current_version = current_tag
+
+            exe_string = f"docker compose -f {cd_essentials['compose_file_path']} up -d"
+
+            os.system(exe_string)
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")
