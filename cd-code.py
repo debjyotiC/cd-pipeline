@@ -62,12 +62,14 @@ while True:
 
             if latest_tag == current_version:
                 logging.info("No updates found.")
+                logging.info(f"Compose file path: {cd_config['compose_file_path']}")
             else:
                 logging.info(f"Update available: {latest_tag}")
                 current_version = latest_tag
 
-                time.sleep(60)  # Wait for 2mis GitHub actions to finsh build and push the code to docker hub
+                time.sleep(120)  # Wait for 2mis GitHub actions to finsh build and push the code to docker hub
 
+                logging.info(f"Running image pull and up command")
                 update_docker_stack(cd_config['compose_file_path'])
 
     except github3.exceptions.AuthenticationFailed:
