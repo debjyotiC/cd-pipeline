@@ -2,7 +2,7 @@ import time
 import json
 import logging
 import github3
-import os
+import subprocess
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -21,15 +21,33 @@ gh = github3.login(token=github_config['token'])
 current_version = None
 
 
-def get_latest_tag(repo):
+def get_latest_tag(repository):
     """Fetch the latest tag from the repository."""
     try:
-        tags = repo.tags()
-        latest_tag = next(tags).name
-        return latest_tag
+        tags = repository.tags()
+        latest_github_tag = next(tags).name
+        return latest_github_tag
     except StopIteration:
         logging.warning("No tags found in the repository.")
         return None
+
+
+def update_docker_stack(compose_file_path):
+    """Pull new Docker images and update the stack."""
+    try:
+        # Pull the latest images
+        logging.info("Pulling the latest Docker images...")
+        pull_command = ["docker", "compose", "-f", compose_file_path, "pull"]
+        subprocess.run(pull_command, check=True)
+
+        # Recreate the services with zero downtime
+        logging.info("Updating the Docker stack...")
+        up_command = ["docker", "compose", "-f", compose_file_path, "up", "-d"]
+        subprocess.run(up_command, check=True)
+
+        logging.info("Docker stack updated successfully.")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Failed to update Docker stack: {e}")
 
 
 while True:
@@ -48,8 +66,7 @@ while True:
                 logging.info(f"Update available: {latest_tag}")
                 current_version = latest_tag
 
-                compose_command = f"docker compose -f {cd_config['compose_file_path']} up -d"
-                os.system(compose_command)
+                update_docker_stack(cd_config['compose_file_path'])
 
     except github3.exceptions.AuthenticationFailed:
         logging.error("Authentication failed. Please check your GitHub token.")
