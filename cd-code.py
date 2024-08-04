@@ -66,7 +66,7 @@ while True:
                 logging.info(f"Update available: {latest_tag}")
                 current_version = latest_tag
 
-                time.sleep(30)  # Wait for 30s GitHub actions to finsh build and push the code to docker hub
+                time.sleep(60)  # Wait for 2mis GitHub actions to finsh build and push the code to docker hub
 
                 update_docker_stack(cd_config['compose_file_path'])
 
